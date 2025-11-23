@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Collection...</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --background-color: #f0f2f5;
+            --card-background: #FFFFFF;
+            --text-color: #333;
+            --subtle-text: #666;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .hero {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #7B68EE 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 3.5em;
+            font-weight: 700;
+            margin: 0 0 10px;
+        }
+        .hero p {
+            font-size: 1.2em;
+            font-weight: 300;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        .card {
+            background: var(--card-background);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        }
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #eee;
+        }
+        .card-content {
+            padding: 25px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .card-content h3 {
+            margin: 0 0 10px;
+            font-size: 1.5em;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+        .card-content p {
+            margin: 0 0 20px;
+            color: var(--subtle-text);
+            line-height: 1.6;
+            flex-grow: 1;
+        }
+        .card-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #357ABD;
+        }
+        .btn-secondary {
+            background-color: #EFEFEF;
+            color: var(--text-color);
+        }
+        .btn-secondary:hover {
+            background-color: #E0E0E0;
+        }
+        .status-text {
+            grid-column: 1 / -1; /* Span across all columns */
+            text-align: center;
+            font-size: 1.2em;
+            color: var(--subtle-text);
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="hero">
+        <h1 id="mainTitle">Loading...</h1>
+        <p id="mainSubtitle">Please wait while we fetch the content.</p>
+    </header>
+
+    <main id="websiteContainer" class="container">
+        <p class="status-text">Loading websites...</p>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCChxWVg-w1TiertkXlUrfUgcC19y-CPNw",
+            authDomain: "hiiii-72d78.firebaseapp.com",
+            databaseURL: "https://hiiii-72d78-default-rtdb.firebaseio.com",
+            projectId: "hiiii-72d78",
+            storageBucket: "hiiii-72d78.firebasestorage.app",
+            messagingSenderId: "560685164053",
+            appId: "1:560685164053:web:7f672f7503160ec868901c"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // --- Fetch Header Data ---
+        database.ref('header').on('value', (snapshot) => {
+            const data = snapshot.val() || { title: "Website Collection", subtitle: "Please add a title from the admin panel." };
+            document.getElementById('mainTitle').textContent = data.title;
+            document.title = data.title; // Set the page title
+            document.getElementById('mainSubtitle').textContent = data.subtitle;
+            document.body.style.opacity = 1; // Show body after content is ready
+        });
+
+        // --- Fetch and Display Websites ---
+        const container = document.getElementById('websiteContainer');
+        database.ref('websites').on('value', (snapshot) => {
+            container.innerHTML = ''; // Clear previous content
+            if (snapshot.exists()) {
+                snapshot.forEach((child) => {
+                    const website = child.val();
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <img src="${website.image}" alt="${website.title}" class="card-image" onerror="this.src='https://via.placeholder.com/400x250/EAEAEA/808080?text=No+Image';">
+                        <div class="card-content">
+                            <h3>${website.title}</h3>
+                            <p>${website.description}</p>
+                            <div class="card-buttons">
+                                <a href="${website.link}" target="_blank" class="btn btn-primary"><i class="fas fa-external-link-alt"></i> Visit Site</a>
+                                <button class="btn btn-secondary" onclick="copyLink('${website.link}')"><i class="fas fa-copy"></i> Copy Link</button>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } else {
+                container.innerHTML = '<p class="status-text">No websites have been added yet. Please add one from the admin panel.</p>';
+            }
+        });
+
+        // --- Utility Function to Copy Link ---
+        function copyLink(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Link copied successfully!');
+            }).catch(err => {
+                console.error('Failed to copy link: ', err);
+                alert('Failed to copy link.');
+            });
+        }
+    </script>
+</body>
+</html>
